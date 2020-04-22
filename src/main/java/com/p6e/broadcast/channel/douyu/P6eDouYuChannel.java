@@ -13,13 +13,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 连接斗鱼的房间弹幕服务
+ */
 public class P6eDouYuChannel extends P6eChannelAbstract {
 
+    // 日志对象
     private final static Logger logger = LoggerFactory.getLogger(P6eDouYuChannel.class);
 
-    private String rid;
+    private int status = 0;
+    private int error = 0;
+    private int errorCount = 3;
+    private P6eProduct product;
 
+    // 房间 ID
+    private String rid;
+    // 回调函数
     private P6eChannelCallback.DouYu callback;
+    // 斗鱼配置信息
     private P6eDouYuChannelInventory inventory;
 
     public static P6eDouYuChannel create(String rid, P6eChannelCallback.DouYu callback) {
@@ -38,8 +49,13 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
      * 连接斗鱼房间
      */
     private void connect() {
-        clientApplication.connect(new P6eProduct(inventory.getWebSocketUrl(), new P6eInstructionsAbstractAsync() {
+        this.status = 0; // 连接中
+        clientApplication.connect(
+                this.product = new P6eProduct(inventory.getWebSocketUrl(), new P6eInstructionsAbstractAsync() {
 
+            /**
+             * 时间回调触发器的配置信息
+             */
             private P6eChannelTimeCallback.Config config;
 
             @Override
@@ -55,12 +71,25 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
                 this.config = new P6eChannelTimeCallback.Config(45, true, true,
                         config -> this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getPant())));
                 P6eChannelTimeCallback.addConfig(this.config);
+
+
+                error = 0;
+                status = 1;
             }
 
             @Override
             public void onCloseAsync(String id) {
                 logger.debug("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                 if (this.config != null) P6eChannelTimeCallback.removConfig(this.config);
+                if (status != -1) {
+                    error ++;
+                    logger.error("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
+                            " ==> error " + error + ", errorCount" + errorCount);
+                    if (error <= errorCount) {
+                        logger.info("reconnect [ CLIENT: " + id + ", RID: " + rid + " ]");
+                        connect(); // 重新连接
+                    }
+                }
             }
 
             @Override
@@ -98,6 +127,11 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
                 logger.debug("onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
             }
         }));
+    }
+
+    public void close() {
+        this.status = -1; // 关闭
+        if (this.product != null) clientApplication.close(this.product.getId());
     }
 
     /**
@@ -157,11 +191,14 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
     }
 
 
+    /**
+     * 消息源的模型类，内部使用
+     */
     private static class Source {
         private byte[] bytes;
         private String content;
 
-        public Source(byte[] bytes, String content) {
+        Source(byte[] bytes, String content) {
             this.bytes = bytes;
             this.content = content;
         }

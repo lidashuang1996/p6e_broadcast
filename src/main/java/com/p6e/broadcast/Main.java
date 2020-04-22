@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         // log4j 日志
         BasicConfigurator.configure();
-        P6eDouYuChannel.create("32892", messages -> {
+        P6eDouYuChannel p = P6eDouYuChannel.create("32892", messages -> {
             for (P6eDouYuChannelMessage message : messages) {
                 System.out.println(message.__text__());
                 for (Object key : message.data().keySet()) {
@@ -20,7 +20,8 @@ public class Main {
                 }
             }
         });
-        Thread.sleep(Integer.MAX_VALUE);
+        Thread.sleep(20000);
+        p.close();
     }
 
 }

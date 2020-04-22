@@ -2,7 +2,7 @@ package com.p6e.broadcast.channel.douyu;
 
 import com.p6e.broadcast.common.P6eToolCommon;
 
-public class P6eDouYuChannelInventory {
+class P6eDouYuChannelInventory {
 
     private static final String WEB_SOCKET_URL = "wss://danmuproxy.douyu.com:8504/";
     private static final String LOGIN_MESSAGE = "type@=loginreq/roomid@=${room}/";
@@ -15,35 +15,35 @@ public class P6eDouYuChannelInventory {
 
     private String rid;
 
-    public P6eDouYuChannelInventory(String rid) {
+    P6eDouYuChannelInventory(String rid) {
         this.rid = rid;
     }
 
-    public String getWebSocketUrl() {
+    String getWebSocketUrl() {
         return WEB_SOCKET_URL;
     }
 
-    public String getLoginInfo() {
+    String getLoginInfo() {
         return P6eToolCommon.translate(LOGIN_MESSAGE, "room", rid);
     }
 
-    public String getGroupInfo() {
+    String getGroupInfo() {
         return P6eToolCommon.translate(GROUP_MESSAGE, "room", rid);
     }
 
-    public String getAllGiftInfo() {
+    String getAllGiftInfo() {
         return ALL_GIFT_MESSAGE;
     }
 
-    public String getPant() {
+    String getPant() {
         return PANT_MESSAGE;
     }
 
-    public int getClientMessageType() {
+    int getClientMessageType() {
         return CLIENT_TYPE_MESSAGE;
     }
 
-    public int getServiceMessageType() {
+    int getServiceMessageType() {
         return SERVICE_TYPE_MESSAGE;
     }
 
