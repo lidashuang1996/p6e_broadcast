@@ -1,23 +1,21 @@
-package com.p6e.broadcast.channel.blibli;
+package com.p6e.broadcast.channel.huomao;
 
 import com.p6e.broadcast.common.P6eToolCommon;
 
-import java.util.List;
 import java.util.Map;
 
-public class P6eBliBliChannelMessage {
-
+public class P6eHuoMaoChannelMessage {
     private byte[] __byte__;
     private String __text__;
     private int __type__;
     private Map data;
 
 
-    static P6eBliBliChannelMessage build(byte[] bytes, int type, String text) {
-        return new P6eBliBliChannelMessage(bytes, type, text);
+    static P6eHuoMaoChannelMessage build(byte[] bytes, int type, String text) {
+        return new P6eHuoMaoChannelMessage(bytes, type, text);
     }
 
-    private P6eBliBliChannelMessage(byte[] bytes, int type, String text) {
+    private P6eHuoMaoChannelMessage(byte[] bytes, int type, String text) {
         this.__byte__ = bytes;
         this.__text__ = text;
         this.__type__ = type;
@@ -43,5 +41,4 @@ public class P6eBliBliChannelMessage {
     private static Map deserialization(String text) {
         return P6eToolCommon.fromJson(text);
     }
-
 }
