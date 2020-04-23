@@ -1,7 +1,11 @@
 package com.p6e.broadcast.common;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -172,5 +176,17 @@ public final class P6eToolCommon {
         for (int i = index; i < index + len; i++) result[i - index] = bytes[index];
         return result;
     }
+
+
+    private static final Gson g = new Gson();
+
+    public static String toJson(Object o) {
+        return g.toJson(o);
+    }
+
+    public static <T> T fromJson(String content) {
+        return g.fromJson(content, new TypeToken<T>() {}.getType());
+    }
+
 
 }

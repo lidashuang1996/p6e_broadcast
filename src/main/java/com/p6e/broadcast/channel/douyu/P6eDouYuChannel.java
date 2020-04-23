@@ -135,9 +135,16 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
     }
 
     /**
-     * 斗鱼发送消息的加密方式
-     * @param message 发送的消息内容
-     * @return 发送的消息的 byte 数组
+     * 斗鱼发送消息
+     * 消息类型 689 客户端发送给斗鱼服务器
+     * 斗鱼消息 = 消息头部
+     *          (
+     *              消息总长度 [ 小端模式转换 4 ( 这个不算总长度中 )]
+     *              消息总长度 [ 小端模式转换 4 ]
+     *              消息类型 [ 小端模式转换 4 ]
+     *         )
+     *         + 消息内容
+     *         + 结束符号 (0)
      */
     private byte[] messageEncoder(String message) {
         int len = 4 + 4 + 1 + message.length();
@@ -153,9 +160,16 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
     }
 
     /**
-     * 斗鱼接收消息的解密方式
-     * @param data 接收的消息内容
-     * @return List<Source> 接收消息处理后的对象
+     * 斗鱼接收消息
+     * 消息类型 690 斗鱼服务器推送给客户端的类型
+     * 斗鱼消息 = 消息头部
+     *          (
+     *              消息总长度 [ 小端模式转换 4 ( 这个不算总长度中 )]
+     *              消息总长度 [ 小端模式转换 4 ]
+     *              消息类型 [ 小端模式转换 4 ]
+     *          )
+     *         + 消息内容
+     *         + 结束符号 (0)
      */
     private List<Source> messageDecoder(byte[] data) {
         int index = 0;
