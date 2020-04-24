@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * HTTP 请求的工具类
+ * @version 1.0
  */
 public class P6eHttpCommon {
 

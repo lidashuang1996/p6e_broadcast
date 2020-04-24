@@ -5,13 +5,29 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+/**
+ * 常用工具类
+ * 1. UUID 生成
+ * 2. 大端模式 int 转 byte
+ * 3. 小端模式 int 转 byte
+ * 4. 大端模式 byte 转 int
+ * 5. 小端模式 byte 转 int
+ * 6. hex 转 byte 数组
+ * 7. byte 数组转 hex
+ * 9. Zlib 压缩
+ * 10. Zlib 解压
+ * 11. 消息解析
+ * 12. byte 数组和并
+ * 13. byte 数组获取指定长度的内容
+ * 14. Object 序列化 JSON 工具
+ * 15. JSON 反序列工具
+ * @version 1.0
+ */
 public final class P6eToolCommon {
-
     /**
      * 生成 UUID
      */
@@ -96,15 +112,15 @@ public final class P6eToolCommon {
      * Zlib 压缩
      */
     public static byte[] compressZlib(byte[] data) {
-        Deflater compresser = new Deflater();
-        compresser.reset();
-        compresser.setInput(data);
-        compresser.finish();
+        Deflater deflater = new Deflater();
+        deflater.reset();
+        deflater.setInput(data);
+        deflater.finish();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(data.length);
         try {
             byte[] buf = new byte[1024];
-            while (!compresser.finished()) {
-                int i = compresser.deflate(buf);
+            while (!deflater.finished()) {
+                int i = deflater.deflate(buf);
                 byteArrayOutputStream.write(buf, 0, i);
             }
         } catch (Exception e) {
@@ -116,7 +132,7 @@ public final class P6eToolCommon {
                 e.printStackTrace();
             }
         }
-        compresser.end();
+        deflater.end();
         return byteArrayOutputStream.toByteArray();
     }
 
@@ -124,14 +140,14 @@ public final class P6eToolCommon {
      * Zlib 解压
      */
     public static byte[] decompressZlib(byte[] data) {
-        Inflater decompresser = new Inflater();
-        decompresser.reset();
-        decompresser.setInput(data);
+        Inflater inflater = new Inflater();
+        inflater.reset();
+        inflater.setInput(data);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(data.length);
         try {
             byte[] buf = new byte[1024];
-            while (!decompresser.finished()) {
-                int i = decompresser.inflate(buf);
+            while (!inflater.finished()) {
+                int i = inflater.inflate(buf);
                 byteArrayOutputStream.write(buf,0, i);
             }
         } catch (Exception e) {
@@ -143,7 +159,7 @@ public final class P6eToolCommon {
                 e.printStackTrace();
             }
         }
-        decompresser.end();
+        inflater.end();
         return byteArrayOutputStream.toByteArray();
     }
 
@@ -177,13 +193,19 @@ public final class P6eToolCommon {
         return result;
     }
 
-
+    /**全局注入 gson 对象 */
     private static final Gson g = new Gson();
 
+    /**
+     * Object 序列化 JSON 工具
+     */
     public static String toJson(Object o) {
         return g.toJson(o);
     }
 
+    /**
+     * JSON 反序列工具
+     */
     public static <T> T fromJson(String content) {
         return g.fromJson(content, new TypeToken<T>() {}.getType());
     }
