@@ -8,7 +8,7 @@ public class P6eHuoMaoChannelMessage {
     private byte[] __byte__;
     private String __text__;
     private int __type__;
-    private Map data;
+    private Object data;
 
 
     static P6eHuoMaoChannelMessage build(byte[] bytes, int type, String text) {
@@ -19,7 +19,8 @@ public class P6eHuoMaoChannelMessage {
         this.__byte__ = bytes;
         this.__text__ = text;
         this.__type__ = type;
-        this.data = deserialization(text);
+        if (this.__type__ == 5) this.data = deserialization(text);
+        else this.data = text;
     }
 
     public byte[] __byte__() {
@@ -34,7 +35,7 @@ public class P6eHuoMaoChannelMessage {
         return __type__;
     }
 
-    public Map data() {
+    public Object data() {
         return data;
     }
 

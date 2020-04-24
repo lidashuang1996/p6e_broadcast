@@ -12,7 +12,7 @@ class P6eHuoMaoChannelInventory {
     private static final String LOGIN_MESSAGE = "{\"Uid\":0, \"Rid\":${id}}";
     private static final String PANT_MESSAGE = "";
 
-    public final static int MESSAGE_ROOM_AGREEMENT_SEND = 1;
+    private final static int SEND_TYPE_MESSAGE = 1;
     public final static int MESSAGE_ROOM_AGREEMENT_ACCEPT = 0;
     private final static int LOGIN_TYPE_MESSAGE = 7;
     private static final int PANT_TYPE_MESSAGE = 2;
@@ -26,7 +26,7 @@ class P6eHuoMaoChannelInventory {
     private void webSocketUrl() {
         try {
             String res = P6eHttpCommon.doGet(WEB_SOCKET_URL);
-            if (res == null || "".equals(res)) {
+            if (res != null && !"".equals(res)) {
                 Map map = P6eToolCommon.fromJson(res);
                 if (map == null) throw new RuntimeException("P6eHuoMaoChannelInventory web socket url null");
                 wsUrl = String.valueOf(map.get("host"));
@@ -61,6 +61,10 @@ class P6eHuoMaoChannelInventory {
         if (this.id == null) throw new RuntimeException("P6eHuoMaoChannelInventory get id null");
     }
 
+    String getId() {
+        return this.id;
+    }
+
     String getWebSocketWsUrl() {
         if (wsUrl == null || wssUrl == null) webSocketUrl();
         return wsUrl;
@@ -85,6 +89,10 @@ class P6eHuoMaoChannelInventory {
 
     int getPantType() {
         return PANT_TYPE_MESSAGE;
+    }
+
+    int getSendType() {
+        return SEND_TYPE_MESSAGE;
     }
 
 }
