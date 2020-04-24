@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class P6eChannelTimeCallback {
 
+
     /**
      * 时间回调器的执行器回调函数
      */
@@ -119,6 +120,8 @@ public class P6eChannelTimeCallback {
     // 轮训触发回调事件的线程
     private static Thread thread;
 
+    private static volatile boolean isDestroy = false;
+
     // 轮训间隔时间
     private static long trainingInterval = 1000;
 
@@ -145,7 +148,6 @@ public class P6eChannelTimeCallback {
         if (thread == null) {
             thread = new Thread() {
                 @Override
-                @SuppressWarnings("InfiniteLoopStatement")
                 public void run() {
                     super.run();
                     while (true) {
@@ -153,6 +155,7 @@ public class P6eChannelTimeCallback {
                             // 每个一段时间遍历一次计数器
                             Iterator<Config> iterator = configs.iterator();
                             while (iterator.hasNext()) {
+                                if (isDestroy) iterator.remove();
                                 Config config = iterator.next();
                                 try {
                                     if (config == null || config.getActuator() == null) iterator.remove();
@@ -180,6 +183,8 @@ public class P6eChannelTimeCallback {
                                     configs.remove(config); // 删除加入的时间回调器
                                 }
                             }
+                            // 如果为摧毁就关闭线程
+                            if (isDestroy) break;
                             // 休眠时间为间隔时间
                             Thread.sleep(trainingInterval);
                         } catch (Exception e) {
@@ -205,7 +210,11 @@ public class P6eChannelTimeCallback {
      * 删除一个事件触发器
      * @param config 配置文件
      */
-    public static void removConfig(Config config) {
+    public static void removeConfig(Config config) {
         queue.offer(config);
+    }
+
+    public static void destroy() {
+        isDestroy = true;
     }
 }

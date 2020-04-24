@@ -44,7 +44,7 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
     /**
      * 连接斗鱼房间
      */
-    private void connect() {
+    protected void connect() {
         this.status = 0; // 连接中
         clientApplication.connect(
                 this.product = new P6eProduct(inventory.getWebSocketWssUrl(), new P6eInstructionsAbstractAsync() {
@@ -70,7 +70,7 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
                     @Override
                     public void onCloseAsync(String id) {
                         logger.debug("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
-                        if (this.config != null) P6eChannelTimeCallback.removConfig(this.config);
+                        if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                         if (status != -1) {
                             error ++;
                             logger.error("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
@@ -122,6 +122,11 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
     public void close() {
         this.status = -1; // 关闭
         if (this.product != null) clientApplication.close(this.product.getId());
+    }
+
+    @Override
+    protected void dump() {
+
     }
 
 
