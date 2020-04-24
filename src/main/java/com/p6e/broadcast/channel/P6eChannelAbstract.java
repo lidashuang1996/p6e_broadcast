@@ -17,7 +17,7 @@ public abstract class P6eChannelAbstract {
     /** 缓存一下，子类连接器 */
     private static List<P6eChannelAbstract> cache = new ArrayList<>();
 
-    // 删除对象的集合
+    /** 删除子类连接器缓存 */
     private static final ConcurrentLinkedQueue<P6eChannelAbstract> queue = new ConcurrentLinkedQueue<>();
 
     /**
@@ -28,10 +28,7 @@ public abstract class P6eChannelAbstract {
             clientApplication = P6eWebsocketClientApplication.run(P6eNioMould.class);
 
     static {
-        /*
-         * 全局初始化
-         * 初始化时间回调触发器
-         */
+        /* 初始化时间回调触发器 */
         P6eChannelTimeCallback.create();
     }
 
@@ -49,10 +46,11 @@ public abstract class P6eChannelAbstract {
     /** 当前连接器的重试次数统计 */
     private int retryCount = 3;
 
-
+    /**
+     * 构造方法缓存子类
+     */
     protected P6eChannelAbstract() {
         cache.add(this);
-        System.out.println("11111111111111111111111111111111111111111111");
     }
 
     /**
@@ -74,19 +72,21 @@ public abstract class P6eChannelAbstract {
      * 摧毁连接器工厂
      * 1. 关闭心跳线程
      * 2. 关闭 WebSocket 客户端
+     * 3. 关闭 WebSocket 客户端创建器
      */
     public static void destroy() {
+        // 关闭心跳线程
+        P6eChannelTimeCallback.destroy();
+        // 关闭 WebSocket 客户端
         Iterator<P6eChannelAbstract> iterator = cache.iterator();
         while (iterator.hasNext()) {
-            iterator.remove();
             iterator.next().dump();
+            iterator.remove();
         }
         // 关闭
         clientApplication.close();
         // 赋值为 null
         clientApplication = null;
-        // 关闭心跳线程
-        P6eChannelTimeCallback.destroy();
     }
 
     /**
@@ -97,26 +97,47 @@ public abstract class P6eChannelAbstract {
         this.status = status;
     }
 
+    /**
+     * 获取是否为正常关闭的状态
+     * @return 是否关闭
+     */
     protected boolean isClose() {
         return CLOSE_STATUS == status;
     }
 
+    /**
+     * 自己递增错误的次数
+     * @return 递增后的次数
+     */
     protected int incrementRetry() {
         return ++retry;
     }
 
+    /**
+     * 获取重试总次数
+     * @return 重试总次数
+     */
     protected int getRetryCount() {
         return retryCount;
     }
 
+    /**
+     * 重新连接
+     */
     protected void reconnect() {
         if (retry <= retryCount) connect();
     }
 
+    /**
+     * 重置重新连接
+     */
     protected void resetReconnect() {
         retry = 0;
     }
 
+    /**
+     * 删除缓存
+     */
     protected void removeCache() {
         queue.offer(this);
         P6eChannelAbstract channel = queue.poll();

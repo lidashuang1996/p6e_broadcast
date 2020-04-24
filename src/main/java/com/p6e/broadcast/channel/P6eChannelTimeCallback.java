@@ -45,36 +45,36 @@ public class P6eChannelTimeCallback {
         // 系统内部计数对象
         private long __counter__ = 0;
 
-        public long getWait() {
+        long getWait() {
             return wait;
         }
 
-        public void setWait(long wait) {
+        void setWait(long wait) {
             this.wait = wait;
             this.initializeCounter();
         }
 
-        public boolean isInterval() {
+        boolean isInterval() {
             return interval;
         }
 
-        public void setInterval(boolean interval) {
+        void setInterval(boolean interval) {
             this.interval = interval;
         }
 
-        public Actuator getActuator() {
+        Actuator getActuator() {
             return actuator;
         }
 
-        public void setActuator(Actuator actuator) {
+        void setActuator(Actuator actuator) {
             this.actuator = actuator;
         }
 
-        public boolean isPromptly() {
+        boolean isPromptly() {
             return promptly;
         }
 
-        public void setPromptly(boolean promptly) {
+        void setPromptly(boolean promptly) {
             this.promptly = promptly;
         }
 
@@ -120,6 +120,7 @@ public class P6eChannelTimeCallback {
     // 轮训触发回调事件的线程
     private static Thread thread;
 
+    // 是否为摧毁的状态
     private static volatile boolean isDestroy = false;
 
     // 轮训间隔时间
@@ -155,8 +156,11 @@ public class P6eChannelTimeCallback {
                             // 每个一段时间遍历一次计数器
                             Iterator<Config> iterator = configs.iterator();
                             while (iterator.hasNext()) {
-                                if (isDestroy) iterator.remove();
                                 Config config = iterator.next();
+                                if (isDestroy) {
+                                    iterator.remove();
+                                    break;
+                                }
                                 try {
                                     if (config == null || config.getActuator() == null) iterator.remove();
                                     else {
@@ -180,7 +184,7 @@ public class P6eChannelTimeCallback {
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    configs.remove(config); // 删除加入的时间回调器
+                                    iterator.remove(); // 删除加入的时间回调器
                                 }
                             }
                             // 如果为摧毁就关闭线程
@@ -212,8 +216,16 @@ public class P6eChannelTimeCallback {
      */
     public static void removeConfig(Config config) {
         queue.offer(config);
+        Config c = queue.poll();
+        while (c != null) {
+            configs.remove(c);
+            c = queue.poll();
+        }
     }
 
+    /**
+     * 摧毁时间触发器
+     */
     public static void destroy() {
         isDestroy = true;
     }

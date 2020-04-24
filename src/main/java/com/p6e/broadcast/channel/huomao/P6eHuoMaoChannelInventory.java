@@ -20,7 +20,8 @@ import java.util.Map;
 class P6eHuoMaoChannelInventory {
 
     // 官网的 URL 地址
-    private static final String URL = "https://www.huomao.com";
+    private static final String HTTPS_URL = "https://www.huomao.com";
+    private static final String HTTP_URL = "http://www.huomao.com";
     // 获取 WebSocket 的 URL 地址
     private static final String WEB_SOCKET_URL = "http://www.huomao.com/ajax/goimConf?type=h5";
     // 房间登录的消息内容
@@ -66,7 +67,7 @@ class P6eHuoMaoChannelInventory {
      * @return 房间 ID
      */
     private String getId(String urlPath) {
-        if (!urlPath.startsWith(URL))
+        if (!urlPath.startsWith(HTTP_URL) || !urlPath.startsWith(HTTPS_URL))
             throw new RuntimeException("Request address is not https://www.huomao.com ");
         String res = P6eHttpCommon.doGet(urlPath);
         if (res == null) throw new RuntimeException("Request address is not https://www.huomao.com ");
