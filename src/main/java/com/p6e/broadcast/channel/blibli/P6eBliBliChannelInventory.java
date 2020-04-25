@@ -15,7 +15,8 @@ import java.util.Map;
  * 4. 获取 WS 连接的地址
  * 5. 获取 WSS 连接的地址
  * 6. 获取登录房间消息类型
- * 7. 获取心跳房间消息类型
+ * 7. 获取登录房间返回消息类型
+ * 8. 获取心跳房间消息类型
  * @version 1.0
  */
 class P6eBliBliChannelInventory {

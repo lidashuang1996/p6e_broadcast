@@ -2,35 +2,70 @@ package com.p6e.broadcast.channel.douyu;
 
 import java.util.*;
 
+/**
+ * 斗鱼直播 https://www.douyu.com
+ * 斗鱼直播消息模型类
+ * @version 1.0
+ */
 public class P6eDouYuChannelMessage {
 
+    /** 原消息的内容 */
     private byte[] __byte__;
+    /** 原消息的文本内容 */
     private String __text__;
+    /** 反序列化后的消息内容 */
     private Map data;
 
-
+    /**
+     * 创建斗鱼消息模型类
+     * @param bytes 消息二进制流数组
+     * @param text 消息文本内容
+     * @return P6eHuoMaoChannelMessage 消息模型类
+     */
     public static P6eDouYuChannelMessage build(byte[] bytes, String text) {
         return new P6eDouYuChannelMessage(bytes, text);
     }
 
+    /**
+     * 构造方法消息模型类
+     * @param bytes 消息二进制数组
+     * @param text 消息文本内容
+     */
     private P6eDouYuChannelMessage(byte[] bytes, String text) {
         this.__byte__ = bytes;
         this.__text__ = text;
         this.data = (Map) deserialization(text);
     }
 
+    /**
+     * 获取消息二进制数组
+     * @return 消息二进制数组
+     */
     public byte[] __byte__() {
         return __byte__;
     }
 
+    /**
+     * 获取消息文本
+     * @return 消息文本
+     */
     public String __text__() {
         return __text__;
     }
 
+    /**
+     * 获取消息反序列化的对象
+     * @return 反序列化的对象
+     */
     public Map data() {
         return data;
     }
 
+    /**
+     * 对消息进行序列化处理
+     * @param text 消息的内容
+     * @return 序列化后的内容
+     */
     private static Object deserialization(String text) {
         boolean bool = false;
         List<Object> list = new ArrayList<>();

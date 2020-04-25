@@ -14,30 +14,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 连接斗鱼的房间弹幕服务
+ * 斗鱼直播 http://www.huomao.com/
+ * 斗鱼直播房间消息连接器
+ * @version 1.0
  */
 public class P6eDouYuChannel extends P6eChannelAbstract {
 
-    // 日志对象
+    /** 日志对象注入 */
     private final static Logger logger = LoggerFactory.getLogger(P6eDouYuChannel.class);
 
-    private int status = 0;
-    private int error = 0;
-    private int errorCount = 3;
+    /** Web Socket 客户端对象 */
     private P6eProduct product;
 
-    // 房间 ID
+    /** 斗鱼房间 ID */
     private String rid;
-    // 回调函数
+
+    /** 斗鱼回调函数 */
     private P6eChannelCallback.DouYu callback;
-    // 斗鱼配置信息
+
+    /** 斗鱼配置信息 */
     private P6eDouYuChannelInventory inventory;
 
+    /**
+     * 创建 P6eDouYuChannel 实例对象
+     * @param rid 房间 ID
+     * @param callback 接收消息后的回调函数
+     * @return P6eDouYuChannel 实例化的对象
+     */
     public static P6eDouYuChannel create(String rid, P6eChannelCallback.DouYu callback) {
         if (callback == null) throw new RuntimeException("P6eChannelCallback.DouYu null");
         return new P6eDouYuChannel(rid, callback);
     }
 
+    /**
+     * 构造方法
+     * @param rid 房间的 ID
+     * @param callback 接收消息后的回调函数
+     */
     private P6eDouYuChannel(String rid, P6eChannelCallback.DouYu callback) {
         this.rid = rid;
         this.callback = callback;
@@ -49,18 +62,17 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
      * 连接斗鱼房间
      */
     protected void connect() {
-        this.status = 0; // 连接中
+        // 修改状态为连接中
+        this.setStatus(CONNECT_STATUS);
         clientApplication.connect(
                 this.product = new P6eProduct(inventory.getWebSocketUrl(), new P6eInstructionsAbstractAsync() {
 
-            /**
-             * 时间回调触发器的配置信息
-             */
+            /** 时间回调触发器的配置信息 */
             private P6eChannelTimeCallback.Config config;
 
             @Override
             public void onOpenAsync(String id) {
-                logger.debug("onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                logger.debug("DouYu onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                 // 1. 发送登录信息
                 this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getLoginInfo()));
                 // 2. 发送加入组信息
@@ -71,35 +83,27 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
                 this.config = new P6eChannelTimeCallback.Config(45, true, true,
                         config -> this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getPant())));
                 P6eChannelTimeCallback.addConfig(this.config);
-
-
-                error = 0;
-                status = 1;
             }
 
             @Override
             public void onCloseAsync(String id) {
-                logger.debug("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                logger.debug("DouYu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                 if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
-                if (status != -1) {
-                    error ++;
-                    logger.error("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
-                            " ==> error " + error + ", errorCount" + errorCount);
-                    if (error <= errorCount) {
-                        logger.info("reconnect [ CLIENT: " + id + ", RID: " + rid + " ]");
-                        connect(); // 重新连接
-                    }
+                if (!isClose()) {
+                    logger.error("DouYu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
+                            " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
+                    reconnect(); // 重新连接
                 }
             }
 
             @Override
             public void onErrorAsync(String id, Throwable throwable) {
-                logger.error("onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
+                logger.error("DouYu onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
             }
 
             @Override
             public void onMessageTextAsync(String id, String content) {
-                logger.debug("onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
+                logger.debug("DouYu onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
             }
 
             @Override
@@ -107,6 +111,8 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
                 List<Source> sources = messageDecoder(bytes);
                 List<P6eDouYuChannelMessage> messages = new ArrayList<>();
                 for (Source source : sources) {
+                    // 包含 type@=loginres 标识连接成功到弹幕服务器
+                    if (source.content.contains("type@=loginres")) resetReconnect();
                     messages.add(P6eDouYuChannelMessage.build(source.bytes, source.content));
                 }
                 callback.execute(messages);
@@ -114,29 +120,39 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
 
             @Override
             public void onMessagePongAsync(String id, byte[] bytes) {
-                logger.debug("onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                logger.debug("DouYu onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
             }
 
             @Override
             public void onMessagePingAsync(String id, byte[] bytes) {
-                logger.debug("onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                logger.debug("DouYu onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
             }
 
             @Override
             public void onMessageContinuationAsync(String id, byte[] bytes) {
-                logger.debug("onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                logger.debug("DouYu onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
             }
         }));
     }
 
+    /**
+     * 关闭斗鱼的房间信息服务器
+     */
+    @Override
     public void close() {
-        this.status = -1; // 关闭
-        if (this.product != null) clientApplication.close(this.product.getId());
+        if (clientApplication != null) {
+            this.removeCache();
+            this.setStatus(CLOSE_STATUS);
+            clientApplication.close(product.getId());
+        } else throw new RuntimeException("DouYu client application null");
     }
 
     @Override
     protected void dump() {
-
+        if (clientApplication != null) {
+            this.setStatus(CLOSE_STATUS);
+            clientApplication.close(product.getId());
+        }
     }
 
     /**
@@ -150,6 +166,7 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
      *         )
      *         + 消息内容
      *         + 结束符号 (0)
+     * @param message  发送的消息内容
      */
     private byte[] messageEncoder(String message) {
         int len = 4 + 4 + 1 + message.length();
@@ -174,20 +191,22 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
      *              消息类型 [ 小端模式转换 4 ]
      *          )
      *         + 消息内容
-     *         + 结束符号 (0)
      */
     private List<Source> messageDecoder(byte[] data) {
         int index = 0;
         List<Source> result = new ArrayList<>();
         while (true) {
             if (data.length - index >= 4) {
+                // 消息总长度
                 byte[] lenBytes1 = new byte[] { data[index++], data[index++], data[index++], data[index++] };
                 int len1 = P6eToolCommon.bytesToIntLittle(lenBytes1);
                 if (len1 > 8 && data.length >= (index + len1)) {
 
+                    // 消息总长度
                     byte[] lenBytes2 = new byte[] { data[index++], data[index++], data[index++], data[index++] };
                     int len2 = P6eToolCommon.bytesToIntLittle(lenBytes2);
 
+                    // 消息类型
                     byte[] typeBytes = new byte[] { data[index++], data[index++], data[index++], data[index++] };
                     int type = P6eToolCommon.bytesToIntLittle(typeBytes);
 
@@ -214,9 +233,12 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
      * 消息源的模型类，内部使用
      */
     private static class Source {
+        /** 构造方法注入数据 */
         private byte[] bytes;
+        /** 构造方法注入数据 */
         private String content;
 
+        /** 构造方法注入数据 */
         Source(byte[] bytes, String content) {
             this.bytes = bytes;
             this.content = content;
