@@ -98,7 +98,7 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
 
                         @Override
                         public void onOpenAsync(String id) {
-                            logger.debug("onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                            logger.debug("HuoMao onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
 
                             // 发送登录的消息
                             this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getLoginInfo(), inventory.getLoginType()));
@@ -112,10 +112,10 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
 
                         @Override
                         public void onCloseAsync(String id) {
-                            logger.debug("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                            logger.debug("HuoMao onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                             if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                             if (!isClose()) {
-                                logger.error("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
+                                logger.error("HuoMao onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
                                         " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
                                 reconnect(); // 重新连接
                             }
@@ -123,12 +123,12 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
 
                         @Override
                         public void onErrorAsync(String id, Throwable throwable) {
-                            logger.error("onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
+                            logger.error("HuoMao onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
                         }
 
                         @Override
                         public void onMessageTextAsync(String id, String content) {
-                            logger.debug("onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
+                            logger.debug("HuoMao onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
                         }
 
                         @Override
@@ -144,17 +144,17 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
 
                         @Override
                         public void onMessagePongAsync(String id, byte[] bytes) {
-                            logger.debug("onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                            logger.debug("HuoMao onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
 
                         @Override
                         public void onMessagePingAsync(String id, byte[] bytes) {
-                            logger.debug("onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                            logger.debug("HuoMao onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
 
                         @Override
                         public void onMessageContinuationAsync(String id, byte[] bytes) {
-                            logger.debug("onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                            logger.debug("HuoMao onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
                     }));
         }
@@ -169,7 +169,7 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
             this.removeCache();
             this.setStatus(CLOSE_STATUS);
             clientApplication.close(product.getId());
-        } else throw new RuntimeException("client application null");
+        } else throw new RuntimeException("HuoMao client application null");
     }
 
     @Override

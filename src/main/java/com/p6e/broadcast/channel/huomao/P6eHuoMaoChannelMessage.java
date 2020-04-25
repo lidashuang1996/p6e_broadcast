@@ -54,8 +54,8 @@ public class P6eHuoMaoChannelMessage {
     }
 
     /**
-     * 获取消息类型
-     * @return 消息类型
+     * 获取消息文本
+     * @return 消息文本
      */
     public String __text__() {
         return __text__;

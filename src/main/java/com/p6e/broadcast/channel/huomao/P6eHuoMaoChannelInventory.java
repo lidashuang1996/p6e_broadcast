@@ -47,7 +47,7 @@ class P6eHuoMaoChannelInventory {
     /**
      * 获取 Web Socket 连接地址的方法
      */
-    private void webSocketUrl() {
+    private synchronized void webSocketUrl() {
         try {
             String res = P6eHttpCommon.doGet(WEB_SOCKET_URL);
             if (res != null && !"".equals(res)) {
