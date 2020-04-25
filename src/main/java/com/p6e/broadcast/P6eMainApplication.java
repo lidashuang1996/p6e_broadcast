@@ -1,5 +1,6 @@
 package com.p6e.broadcast;
 
+import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.blibli.P6eBliBliChannel;
 import com.p6e.broadcast.channel.blibli.P6eBliBliChannelMessage;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannel;
@@ -21,26 +22,33 @@ public class P6eMainApplication {
         P6eLoggerCommon.init();
 
         /* 斗鱼连接弹幕房间 */
-        P6eDouYuChannel.create("288016", messages -> {
+        P6eDouYuChannel p6eDouYuChannel = P6eDouYuChannel.create("288016", messages -> {
             for (P6eDouYuChannelMessage message : messages) {
                 logger.info("[ DOU YU ] ==> " + message.data().toString());
             }
         });
 
         /* BliBli 连接弹幕房间 */
-        P6eBliBliChannel.create("7734200", messages -> {
+        P6eBliBliChannel p6eBliBliChannel = P6eBliBliChannel.create("7734200", messages -> {
             for (P6eBliBliChannelMessage message : messages) {
                 logger.info("[ BLI BLI ] ==> " + message.data().toString());
             }
         });
 
         /* 火猫连接弹幕房间 */
-        P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
+        P6eHuoMaoChannel p6eHuoMaoChannel = P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
             for (P6eHuoMaoChannelMessage message : messages) {
                 logger.info("[ HUO MAO ] ==> " + message.data().toString());
             }
         });
 
+        /* 关闭的方法 */
+        // p6eDouYuChannel.close();
+        // p6eBliBliChannel.close();
+        // p6eHuoMaoChannel.close();
+
+        /* 摧毁的方法 */
+        // P6eChannelAbstract.destroy();
     }
 
 }

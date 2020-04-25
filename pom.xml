@@ -6,10 +6,12 @@
 
     <groupId>com.p6e.broadcast</groupId>
     <artifactId>channel-all</artifactId>
+    <name>p6e-broadcast-channel-all</name>
     <version>0.0.1</version>
 
     <dependencies>
 
+        <!-- GSON 对象 -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -30,6 +32,7 @@
             <version>1.2.3</version>
         </dependency>
 
+        <!-- netty 编写的 Web Socket 客户端 -->
         <dependency>
             <groupId>com.p6e.netty</groupId>
             <artifactId>websocket-client</artifactId>
