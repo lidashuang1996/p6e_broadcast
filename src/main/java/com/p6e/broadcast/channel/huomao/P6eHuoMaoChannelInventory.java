@@ -67,7 +67,7 @@ class P6eHuoMaoChannelInventory {
      * @return 房间 ID
      */
     private String getId(String urlPath) {
-        if (!urlPath.startsWith(HTTP_URL) || !urlPath.startsWith(HTTPS_URL))
+        if (!(urlPath.startsWith(HTTP_URL) || urlPath.startsWith(HTTPS_URL)))
             throw new RuntimeException("Request address is not https://www.huomao.com ");
         String res = P6eHttpCommon.doGet(urlPath);
         if (res == null) throw new RuntimeException("Request address is not https://www.huomao.com ");

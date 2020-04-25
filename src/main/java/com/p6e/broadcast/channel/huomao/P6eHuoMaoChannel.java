@@ -35,16 +35,33 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
     /** 火猫配置信息 */
     private P6eHuoMaoChannelInventory inventory;
 
+    /**
+     * 创建 P6eHuoMaoChannel 实例对象
+     * @param urlPath 房间的 URL 路径
+     * @param callback 接收消息后的回调函数
+     * @return P6eHuoMaoChannel 实例化的对象
+     */
     public static P6eHuoMaoChannel create(String urlPath, P6eChannelCallback.HuoMao callback) {
         if (callback == null) throw new RuntimeException("P6eChannelCallback.HuoMao null");
         return new P6eHuoMaoChannel(urlPath, callback);
     }
 
+    /**
+     * 创建 P6eHuoMaoChannel 实例对象
+     * @param rid 房间 ID
+     * @param callback 接收消息后的回调函数
+     * @return P6eHuoMaoChannel 实例化的对象
+     */
     public static P6eHuoMaoChannel create(int rid, P6eChannelCallback.HuoMao callback) {
         if (callback == null) throw new RuntimeException("P6eChannelCallback.HuoMao null");
         return new P6eHuoMaoChannel(rid, callback);
     }
 
+    /**
+     * 构造方法
+     * @param rid 房间 ID
+     * @param callback 接收消息后的回调函数
+     */
     private P6eHuoMaoChannel(int rid, P6eChannelCallback.HuoMao callback) {
         this.rid = String.valueOf(rid);
         this.callback = callback;
@@ -52,6 +69,11 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
         this.connect();
     }
 
+    /**
+     * 构造方法
+     * @param urlPath 房间的 URL 路径
+     * @param callback 接收消息后的回调函数
+     */
     private P6eHuoMaoChannel(String urlPath, P6eChannelCallback.HuoMao callback) {
         this.callback = callback;
         this.inventory = new P6eHuoMaoChannelInventory(urlPath);
@@ -92,7 +114,7 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
                         public void onCloseAsync(String id) {
                             logger.debug("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                             if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
-                            if (isClose()) {
+                            if (!isClose()) {
                                 logger.error("onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
                                         " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
                                 reconnect(); // 重新连接

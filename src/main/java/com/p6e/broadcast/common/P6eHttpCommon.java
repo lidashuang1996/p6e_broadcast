@@ -21,7 +21,7 @@ public class P6eHttpCommon {
      * @return 请求返回的结果
      */
     public static String doGet(String httpUrl) {
-        HttpURLConnection connection = null;
+        HttpURLConnection connection;
         try {
             // 创建远程url连接对象
             URL url = new URL(httpUrl);
