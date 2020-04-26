@@ -210,5 +210,11 @@ public final class P6eToolCommon {
         return g.fromJson(content, new TypeToken<T>() {}.getType());
     }
 
+    /**
+     * JSON 反序列工具
+     */
+    public static <T> T fromJson(String content, Class<T> clazz) {
+        return g.fromJson(content, clazz);
+    }
 
 }

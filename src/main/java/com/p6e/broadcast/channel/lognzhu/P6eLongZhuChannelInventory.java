@@ -23,11 +23,9 @@ class P6eLongZhuChannelInventory {
     // 官网的 URL 地址
     private static final String HTTPS_URL = "https://star.longzhu.com";
     private static final String HTTP_URL = "http://star.longzhu.com";
-
-    // 房间登录的消息内容
-    private static final String LOGIN_MESSAGE = "{\"Uid\":0, \"Rid\":${id}}";
     // 房间心跳消息的内容
     private static final String PANT_MESSAGE = "{\"body\":\"{}\",\"op\":2,\"sid\":0,\"seq\":0}";
+    // MID 消息的内容
     private static final String MID_MESSAGE = "{\"body\":{\"msgId\":\"${mid}\"},\"op\":6,\"sid\":0,\"seq\":0}";
     // 获取 WebSocket 的 URL 地址
     private static final String GET_WEB_SOCKET_URL = "http://api.longzhu.com/" +
@@ -119,8 +117,8 @@ class P6eLongZhuChannelInventory {
      * 获取登录消息内容
      * @return 登录消息内容
      */
-    String getLoginInfo() {
-        return P6eToolCommon.translate(LOGIN_MESSAGE, "id", id);
+    String getMidInfo(String mid) {
+        return P6eToolCommon.translate(MID_MESSAGE, "mid", mid);
     }
 
     /**
@@ -129,11 +127,6 @@ class P6eLongZhuChannelInventory {
      */
     String getPantInfo() {
         return PANT_MESSAGE;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new P6eLongZhuChannelInventory("http://star.longzhu.com/sk2?tag=lz_web_live_star&ec=channel_new_star&pos=1")
-        .getWebSocketWsUrl());
     }
 
 }
