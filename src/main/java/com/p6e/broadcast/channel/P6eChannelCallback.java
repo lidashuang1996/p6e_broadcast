@@ -4,6 +4,7 @@ package com.p6e.broadcast.channel;
 import com.p6e.broadcast.channel.blibli.P6eBliBliChannelMessage;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannelMessage;
 import com.p6e.broadcast.channel.huomao.P6eHuoMaoChannelMessage;
+import com.p6e.broadcast.channel.lognzhu.P6eLongZhuChannelMessage;
 
 import java.util.List;
 
@@ -32,6 +33,13 @@ public interface P6eChannelCallback {
      */
     public interface HuoMao {
         public void execute(List<P6eHuoMaoChannelMessage> messages);
+    }
+
+    /**
+     * 龙珠直播的消息回调
+     */
+    public interface LongZhu {
+        public void execute(List<P6eLongZhuChannelMessage> messages);
     }
 
 }
