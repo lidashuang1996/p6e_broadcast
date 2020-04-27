@@ -9,9 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 龙珠直播 http://www.longzhu.com/
@@ -99,10 +97,11 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                         /** 时间回调触发器的配置信息 */
                         private P6eChannelTimeCallback.Config config;
 
-                        Map<String, String> map = new HashMap<>();
-
-                        private  int count = 0;
+                        /** MID */
                         private String mid = "";
+
+                        /** 时间戳 */
+                        private long maxDateTime = 0;
 
                         @Override
                         public void onOpenAsync(String id) {
@@ -137,26 +136,16 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                             if ("\"{}\"".equals(content)) content = "{}"; // 替换非JSON格式的字符串
                             P6eLongZhuChannelMessage message = P6eLongZhuChannelMessage.build(content);
                             if (message != null && message.getMsgId() != null) {
-                                if (map.get(message.getMsgId()) != null) {
-                                    logger.error(" [ SEND [1] ] " + message.getMsgId());
-                                    this.sendMessage(TEXT_MESSAGE_TYPE, inventory.getMidInfo(mid));
-                                    map.clear();
-                                    return;
-                                }
-                                this.mid = message.getMsgId();
-                                if (message.getAppId() != null) {
+                                // 缓存里面查看是否存在消息
+                                if (message.getAppId() != null && message.getTimestamp() > maxDateTime) {
+                                    this.mid = message.getMsgId();
+                                    this.maxDateTime = message.getTimestamp();
                                     List<P6eLongZhuChannelMessage> messages = new ArrayList<>();
                                     messages.add(message);
                                     callback.execute(messages);
-
-
-//                                    if (count++ > 3) {
-//                                        count = 0;
-//                                        logger.error(" [ SEND [1] ] " + message.getMsgId());
-//                                        this.sendMessage(TEXT_MESSAGE_TYPE, inventory.getMidInfo(message.getMsgId()));
-//                                    }
+                                } else if (message.getAppId() != null) {
+                                    this.sendMessage(TEXT_MESSAGE_TYPE, inventory.getMidInfo(mid));
                                 }
-                                map.put(message.getMsgId(), "");
                             }
                         }
 
