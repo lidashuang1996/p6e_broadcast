@@ -18,6 +18,25 @@ public class P6eMainApplication {
     /** 日志 */
     private static final Logger logger = LoggerFactory.getLogger(P6eMainApplication.class);
 
+    /**
+     * 直播平台4.虎牙直播
+     *
+     * 直播平台5.花椒直播
+     *
+     * 直播平台6.企鹅电竞
+     *
+     * 战旗
+     *
+     * YY
+     *
+     * 花椒
+     *
+     * 触手tv
+     * // 轮询机制
+     * // https://chat.chushou.tv/chat/get.htm?callback=jQuery11020368393905666204_1588376287431&style=2&roomId=93857592&breakpoint=2185_1588376438612_0_0&_=1588376287531
+     *
+     * 其他的都是废物了
+     */
     public static void main(String[] args) {
 
         /* 日志的初始化 */

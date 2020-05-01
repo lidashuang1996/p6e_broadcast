@@ -21,7 +21,8 @@ class P6eDouYuChannelInventory {
     // 登录的消息模板
     private static final String LOGIN_MESSAGE = "type@=loginreq/roomid@=${room}/";
     // 加入组消息模板
-    private static final String GROUP_MESSAGE = "type@=joingroup/rid@=${room}/gid@=0/";
+    // private static final String GROUP_MESSAGE = "type@=joingroup/rid@=${room}/gid@=0/";
+    private static final String GROUP_MESSAGE = "type@=joingroup/rid@=${room}/gid@=-9999/";
     // 接收全部礼物的消息
     private static final String ALL_GIFT_MESSAGE = "type@=dmfbdreq/dfl@=sn@AA=105@ASss@AA=0@AS@Ssn" +
             "@AA=106@ASss@AA=0@AS@Ssn@AA=107@ASss@AA=0@AS@Ssn@AA=108@ASss@AA=0@AS@Ssn@AA=110@ASss@AA=0@AS@S/";
