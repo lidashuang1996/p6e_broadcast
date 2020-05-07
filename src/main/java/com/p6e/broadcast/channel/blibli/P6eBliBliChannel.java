@@ -72,7 +72,7 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
                     private P6eChannelTimeCallback.Config config;
 
                     @Override
-                    public void onOpenAsync(String id) {
+                    public void onOpen(String id) {
                         logger.debug("BliBli onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
 
                         // 发送登录的消息
@@ -87,7 +87,7 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
                     }
 
                     @Override
-                    public void onCloseAsync(String id) {
+                    public void onClose(String id) {
                         logger.debug("BliBli onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                         if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                         if (!isClose()) {
@@ -98,17 +98,17 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
                     }
 
                     @Override
-                    public void onErrorAsync(String id, Throwable throwable) {
+                    public void onError(String id, Throwable throwable) {
                         logger.error("BliBli onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
                     }
 
                     @Override
-                    public void onMessageTextAsync(String id, String content) {
+                    public void onMessageText(String id, String content) {
                         logger.debug("BliBli onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
                     }
 
                     @Override
-                    public void onMessageBinaryAsync(String id, byte[] bytes) {
+                    public void onMessageBinary(String id, byte[] bytes) {
                         List<Source> sources = messageDecoder(bytes);
                         List<P6eBliBliChannelMessage> messages = new ArrayList<>();
                         for (Source source : sources) {
@@ -120,17 +120,17 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
                     }
 
                     @Override
-                    public void onMessagePongAsync(String id, byte[] bytes) {
+                    public void onMessagePong(String id, byte[] bytes) {
                         logger.debug("BliBli onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                     }
 
                     @Override
-                    public void onMessagePingAsync(String id, byte[] bytes) {
+                    public void onMessagePing(String id, byte[] bytes) {
                         logger.debug("BliBli onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                     }
 
                     @Override
-                    public void onMessageContinuationAsync(String id, byte[] bytes) {
+                    public void onMessageContinuation(String id, byte[] bytes) {
                         logger.debug("BliBli onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                     }
                 }));

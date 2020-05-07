@@ -147,7 +147,7 @@ public class P6eChannelTimeCallback {
         // 注入间隔时间
         trainingInterval = ti;
         if (thread == null) {
-            thread = new Thread() {
+            thread = new Thread("P6eChannelTime") {
                 @Override
                 public void run() {
                     super.run();

@@ -4,6 +4,7 @@ package com.p6e.broadcast.channel;
 import com.p6e.broadcast.channel.blibli.P6eBliBliChannelMessage;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannelMessage;
 import com.p6e.broadcast.channel.huomao.P6eHuoMaoChannelMessage;
+import com.p6e.broadcast.channel.kuaishou.P6eKuaiShouChannelMessage;
 import com.p6e.broadcast.channel.lognzhu.P6eLongZhuChannelMessage;
 
 import java.util.List;
@@ -40,6 +41,13 @@ public interface P6eChannelCallback {
      */
     public interface LongZhu {
         public void execute(List<P6eLongZhuChannelMessage> messages);
+    }
+
+    /**
+     * 快手直播的消息回调
+     */
+    public interface KuaiShou {
+        public void execute(List<P6eKuaiShouChannelMessage> messages);
     }
 
 }

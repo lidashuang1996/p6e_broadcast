@@ -40,7 +40,13 @@
     </appender>
 
     <!--指定基础的日志输出级别-->
-    <root level="INFO,WARN,DEBUG,ERROR">
+    <!--<root level="INFO,WARN,DEBUG,ERROR">-->
+        <!--&lt;!&ndash;appender将会添加到这个loger&ndash;&gt;-->
+        <!--<appender-ref ref="console"/>-->
+        <!--<appender-ref ref="timeFileOutput"/>-->
+    <!--</root>-->
+
+    <root level="INFO,WARN,ERROR">
         <!--appender将会添加到这个loger-->
         <appender-ref ref="console"/>
         <appender-ref ref="timeFileOutput"/>

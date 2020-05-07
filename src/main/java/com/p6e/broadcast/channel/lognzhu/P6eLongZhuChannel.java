@@ -104,7 +104,7 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                         private long maxDateTime = 0;
 
                         @Override
-                        public void onOpenAsync(String id) {
+                        public void onOpen(String id) {
                             logger.debug("LongZhu onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                             config = new P6eChannelTimeCallback.Config(20, true, config ->
                                     this.sendMessage(TEXT_MESSAGE_TYPE, inventory.getPantInfo()));
@@ -112,7 +112,7 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                         }
 
                         @Override
-                        public void onCloseAsync(String id) {
+                        public void onClose(String id) {
                             logger.debug("LongZhu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
                             if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                             if (!isClose()) {
@@ -123,12 +123,12 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                         }
 
                         @Override
-                        public void onErrorAsync(String id, Throwable throwable) {
+                        public void onError(String id, Throwable throwable) {
                             logger.error("LongZhu onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
                         }
 
                         @Override
-                        public void onMessageTextAsync(String id, String content) {
+                        public void onMessageText(String id, String content) {
                             if (!bool) { // 收到消息就表示连接成功了
                                 bool = true;
                                 resetReconnect();
@@ -150,22 +150,22 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                         }
 
                         @Override
-                        public void onMessageBinaryAsync(String id, byte[] bytes) {
+                        public void onMessageBinary(String id, byte[] bytes) {
                             logger.debug("LongZhu onMessageBinaryAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
 
                         @Override
-                        public void onMessagePongAsync(String id, byte[] bytes) {
+                        public void onMessagePong(String id, byte[] bytes) {
                             logger.debug("LongZhu onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
 
                         @Override
-                        public void onMessagePingAsync(String id, byte[] bytes) {
+                        public void onMessagePing(String id, byte[] bytes) {
                             logger.debug("LongZhu onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
 
                         @Override
-                        public void onMessageContinuationAsync(String id, byte[] bytes) {
+                        public void onMessageContinuation(String id, byte[] bytes) {
                             logger.debug("LongZhu onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
                         }
                     }));

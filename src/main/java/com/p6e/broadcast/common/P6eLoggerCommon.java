@@ -1,6 +1,7 @@
 package com.p6e.broadcast.common;
 
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -22,18 +23,20 @@ public class P6eLoggerCommon {
     /** 是否加载过 logback 配置信息 */
     private static volatile boolean bool = false;
 
+    private static LoggerContext loggerContext;
+
     /** 加载 logback 配置信息 */
     public synchronized static void init() {
         if (!bool) {
             try {
                 URL filePath = P6eLoggerCommon.class.getClassLoader().getResource("./logback.xml");
                 if (filePath == null) throw new NullPointerException("P6eLoggerCommon filePath");
-                LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+                loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 JoranConfigurator configurator = new JoranConfigurator();
-                configurator.setContext(lc);
-                lc.reset();
+                configurator.setContext(loggerContext);
+                loggerContext.reset();
                 configurator.doConfigure(filePath);
-                StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+                StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
                 bool = true;
                 headerLog();
             } catch (JoranException e) {
@@ -51,5 +54,11 @@ public class P6eLoggerCommon {
         logger.info(" / ____/ / /_/ / /  __/        / /_/ /  / /    / /_/ // /_/ / / /_/ /  / /__  / /_/ /  (__  ) / /_  ");
         logger.info("/_/      \\____/  \\___/        /_____/  /_/     \\____/ \\__,_/  \\__,_/   \\___/  \\__,_/  /____/  \\__/  ");
         logger.info("                                                                                                    ");
+    }
+
+    public static void level() {
+        loggerContext.getLogger("root").setLevel(Level.INFO);
+        loggerContext.getLogger("root").setLevel(Level.WARN);
+        loggerContext.getLogger("root").setLevel(Level.ERROR);
     }
 }
