@@ -6,6 +6,7 @@ import com.p6e.broadcast.channel.douyu.P6eDouYuChannelMessage;
 import com.p6e.broadcast.channel.huomao.P6eHuoMaoChannelMessage;
 import com.p6e.broadcast.channel.kuaishou.P6eKuaiShouChannelMessage;
 import com.p6e.broadcast.channel.lognzhu.P6eLongZhuChannelMessage;
+import com.p6e.broadcast.channel.zhangqi.P6eZhangQiChannelMessage;
 
 import java.util.List;
 
@@ -50,4 +51,8 @@ public interface P6eChannelCallback {
         public void execute(List<P6eKuaiShouChannelMessage> messages);
     }
 
+
+    public interface ZhangQi {
+        public void execute(List<P6eZhangQiChannelMessage> messages);
+    }
 }

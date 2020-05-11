@@ -3,8 +3,9 @@ package com.p6e.broadcast.channel.lognzhu;
 import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.P6eChannelCallback;
 import com.p6e.broadcast.channel.P6eChannelTimeCallback;
-import com.p6e.netty.websocket.client.instructions.P6eInstructionsAbstractAsync;
-import com.p6e.netty.websocket.client.product.P6eProduct;
+import com.p6e.netty.websocket.client.P6eWebSocketClient;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
+import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +22,11 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
     /** 日志对象注入 */
     private final static Logger logger = LoggerFactory.getLogger(P6eLongZhuChannel.class);
 
-    /** Web Socket 客户端对象 */
-    private P6eProduct product;
-
     /** 龙珠房间 ID */
     private String rid;
+
+    /** Web Socket 会话客户端 ID */
+    private String clientId;
 
     /** 龙珠回调函数 */
     private P6eChannelCallback.LongZhu callback;
@@ -89,7 +90,7 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
         if (clientApplication == null) throw new RuntimeException("client application null");
         else {
             clientApplication.connect(
-                    this.product = new P6eProduct(inventory.getWebSocketWsUrl(), new P6eInstructionsAbstractAsync() {
+                    new P6eConfig(inventory.getWebSocketWsUrl(), new P6eActuatorDefault() {
 
                         /** 是否初始化 */
                         private boolean bool = false;
@@ -104,31 +105,33 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                         private long maxDateTime = 0;
 
                         @Override
-                        public void onOpen(String id) {
-                            logger.debug("LongZhu onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                        public void onOpen(P6eWebSocketClient webSocket) {
+                            clientId = webSocket.getId();
+                            logger.debug("LongZhu onOpenAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
                             config = new P6eChannelTimeCallback.Config(20, true, config ->
-                                    this.sendMessage(TEXT_MESSAGE_TYPE, inventory.getPantInfo()));
+                                    webSocket.sendTextMessage(inventory.getPantInfo()));
                             P6eChannelTimeCallback.addConfig(config);
                         }
 
                         @Override
-                        public void onClose(String id) {
-                            logger.debug("LongZhu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                        public void onClose(P6eWebSocketClient webSocket) {
+                            logger.debug("LongZhu onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
                             if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                             if (!isClose()) {
-                                logger.error("LongZhu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
+                                logger.error("LongZhu onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]" +
                                         " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
                                 reconnect(); // 重新连接
                             }
                         }
 
                         @Override
-                        public void onError(String id, Throwable throwable) {
-                            logger.error("LongZhu onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
+                        public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
+                            logger.error("LongZhu onErrorAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + throwable.getMessage());
                         }
 
                         @Override
-                        public void onMessageText(String id, String content) {
+                        public void onMessageText(P6eWebSocketClient webSocket, String content) {
                             if (!bool) { // 收到消息就表示连接成功了
                                 bool = true;
                                 resetReconnect();
@@ -144,29 +147,33 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
                                     messages.add(message);
                                     callback.execute(messages);
                                 } else if (message.getAppId() != null) {
-                                    this.sendMessage(TEXT_MESSAGE_TYPE, inventory.getMidInfo(mid));
+                                    webSocket.sendTextMessage(inventory.getMidInfo(mid));
                                 }
                             }
                         }
 
                         @Override
-                        public void onMessageBinary(String id, byte[] bytes) {
-                            logger.debug("LongZhu onMessageBinaryAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("LongZhu onMessageBinaryAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
 
                         @Override
-                        public void onMessagePong(String id, byte[] bytes) {
-                            logger.debug("LongZhu onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("LongZhu onMessagePongAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
 
                         @Override
-                        public void onMessagePing(String id, byte[] bytes) {
-                            logger.debug("LongZhu onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("LongZhu onMessagePingAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
 
                         @Override
-                        public void onMessageContinuation(String id, byte[] bytes) {
-                            logger.debug("LongZhu onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("LongZhu onMessageContinuationAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
                     }));
         }
@@ -180,7 +187,7 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
         if (clientApplication != null) {
             this.removeCache();
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         } else throw new RuntimeException("LongZhu client application null");
     }
 
@@ -188,7 +195,7 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
     protected void dump() {
         if (clientApplication != null) {
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         }
     }
 }

@@ -1,18 +1,23 @@
 package com.p6e.broadcast;
 
-import com.p6e.broadcast.channel.P6eChannelAbstract;
-import com.p6e.broadcast.channel.blibli.P6eBliBliChannel;
-import com.p6e.broadcast.channel.blibli.P6eBliBliChannelMessage;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannel;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannelMessage;
-import com.p6e.broadcast.channel.huomao.P6eHuoMaoChannel;
-import com.p6e.broadcast.channel.huomao.P6eHuoMaoChannelMessage;
-import com.p6e.broadcast.channel.lognzhu.P6eLongZhuChannel;
-import com.p6e.broadcast.channel.lognzhu.P6eLongZhuChannelMessage;
 import com.p6e.broadcast.common.P6eLoggerCommon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 1. blibli    ok!
+ * 2. douyu     ok!
+ * 3. huomao    ok!
+ * 4. kuaishou  ok!
+ * 5. huya
+ * 6. huajiao
+ * 7. qier
+ * 8. zhanqi
+ * 9. YY
+ * 10. chushou
+ */
 public class P6eMainApplication {
 
     /** 日志 */
@@ -98,13 +103,12 @@ public class P6eMainApplication {
         /* 日志的初始化 */
         P6eLoggerCommon.init();
 
-        P6eLongZhuChannel p6eLongZhuChannel = P6eLongZhuChannel.create("http://star.longzhu.com/sk2", messages -> {
-            for (P6eLongZhuChannelMessage message : messages) {
-                logger.info("[ Long Zhu ] ==> " + message.toString());
-            }
-        });
+//        P6eLongZhuChannel p6eLongZhuChannel = P6eLongZhuChannel.create("http://star.longzhu.com/sk2", messages -> {
+//            for (P6eLongZhuChannelMessage message : messages) {
+//                logger.info("[ Long Zhu ] ==> " + message.toString());
+//            }
+//        });
 
-        if (1 == 1) return;
 
         /* 斗鱼连接弹幕房间 */
         P6eDouYuChannel p6eDouYuChannel = P6eDouYuChannel.create("288016", messages -> {
@@ -114,18 +118,18 @@ public class P6eMainApplication {
         });
 
         /* BliBli 连接弹幕房间 */
-        P6eBliBliChannel p6eBliBliChannel = P6eBliBliChannel.create("7734200", messages -> {
-            for (P6eBliBliChannelMessage message : messages) {
-                logger.info("[ BLI BLI ] ==> " + message.data().toString());
-            }
-        });
+//        P6eBliBliChannel p6eBliBliChannel = P6eBliBliChannel.create("531557", messages -> {
+//            for (P6eBliBliChannelMessage message : messages) {
+//                logger.info("[ BLI BLI ] ==> " + message.data().toString());
+//            }
+//        });
 
         /* 火猫连接弹幕房间 */
-        P6eHuoMaoChannel p6eHuoMaoChannel = P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
-            for (P6eHuoMaoChannelMessage message : messages) {
-                logger.info("[ HUO MAO ] ==> " + message.data().toString());
-            }
-        });
+//        P6eHuoMaoChannel p6eHuoMaoChannel = P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
+//            for (P6eHuoMaoChannelMessage message : messages) {
+//                logger.info("[ HUO MAO ] ==> " + message.data().toString());
+//            }
+//        });
 
         /* 龙珠连接弹幕房间 */
 //        P6eLongZhuChannel p6eLongZhuChannel = P6eLongZhuChannel.create("http://star.longzhu.com/sk2", messages -> {

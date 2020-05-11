@@ -4,8 +4,9 @@ import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.P6eChannelCallback;
 import com.p6e.broadcast.channel.P6eChannelTimeCallback;
 import com.p6e.broadcast.common.P6eToolCommon;
-import com.p6e.netty.websocket.client.instructions.P6eInstructionsAbstractAsync;
-import com.p6e.netty.websocket.client.product.P6eProduct;
+import com.p6e.netty.websocket.client.P6eWebSocketClient;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
+import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +24,8 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
     /** 日志对象注入 */
     private final static Logger logger = LoggerFactory.getLogger(P6eHuoMaoChannel.class);
 
-    /** Web Socket 客户端对象 */
-    private P6eProduct product;
+    /** Web Socket 会话客户端 ID */
+    private String clientId;
 
     /** 火猫房间 ID */
     private String rid;
@@ -91,49 +92,51 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
         if (clientApplication == null) throw new RuntimeException("client application null");
         else {
             clientApplication.connect(
-                    this.product = new P6eProduct(inventory.getWebSocketWssUrl(), new P6eInstructionsAbstractAsync() {
+                    new P6eConfig(inventory.getWebSocketWssUrl(), new P6eActuatorDefault() {
 
                         /** 时间回调触发器的配置信息 */
                         private P6eChannelTimeCallback.Config config;
 
                         @Override
-                        public void onOpen(String id) {
-                            logger.debug("HuoMao onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                        public void onOpen(P6eWebSocketClient webSocket) {
+                            clientId = webSocket.getId();
+                            logger.debug("HuoMao onOpenAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
 
                             // 发送登录的消息
-                            this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getLoginInfo(), inventory.getLoginType()));
+                            webSocket.sendBinaryMessage(messageEncoder(inventory.getLoginInfo(), inventory.getLoginType()));
 
                             // 定时器
                             this.config = new P6eChannelTimeCallback.Config(30, true, true,
-                                    config -> this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getPantInfo(), inventory.getPantType())));
+                                    config -> webSocket.sendBinaryMessage(messageEncoder(inventory.getPantInfo(), inventory.getPantType())));
                             P6eChannelTimeCallback.addConfig(this.config);
-
                         }
 
                         @Override
-                        public void onClose(String id) {
-                            logger.debug("HuoMao onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+                        public void onClose(P6eWebSocketClient webSocket) {
+                            logger.debug("HuoMao onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
                             if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                             if (!isClose()) {
-                                logger.error("HuoMao onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
+                                logger.error("HuoMao onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]" +
                                         " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
                                 reconnect(); // 重新连接
                             }
                         }
 
                         @Override
-                        public void onError(String id, Throwable throwable) {
-                            logger.error("HuoMao onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
+                        public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
+                            logger.error("HuoMao onErrorAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + throwable.getMessage());
                         }
 
                         @Override
-                        public void onMessageText(String id, String content) {
-                            logger.debug("HuoMao onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
+                        public void onMessageText(P6eWebSocketClient webSocket, String message) {
+                            logger.debug("HuoMao onMessageTextAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + message);
                         }
 
                         @Override
-                        public void onMessageBinary(String id, byte[] bytes) {
-                            List<Source> sources = messageDecoder(bytes);
+                        public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
+                            List<Source> sources = messageDecoder(message);
                             List<P6eHuoMaoChannelMessage> messages = new ArrayList<>();
                             for (Source source : sources) {
                                 if (source.type == inventory.getLoginResultType()) resetReconnect(); // 登录成功，重置错误的次数
@@ -143,18 +146,21 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
                         }
 
                         @Override
-                        public void onMessagePong(String id, byte[] bytes) {
-                            logger.debug("HuoMao onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("HuoMao onMessagePongAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
 
                         @Override
-                        public void onMessagePing(String id, byte[] bytes) {
-                            logger.debug("HuoMao onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("HuoMao onMessagePingAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
 
                         @Override
-                        public void onMessageContinuation(String id, byte[] bytes) {
-                            logger.debug("HuoMao onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+                        public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
+                            logger.debug("HuoMao onMessageContinuationAsync [ CLIENT: "
+                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
                         }
                     }));
         }
@@ -168,7 +174,7 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
         if (clientApplication != null) {
             this.removeCache();
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         } else throw new RuntimeException("HuoMao client application null");
     }
 
@@ -176,7 +182,7 @@ public class P6eHuoMaoChannel extends P6eChannelAbstract {
     protected void dump() {
         if (clientApplication != null) {
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         }
     }
 

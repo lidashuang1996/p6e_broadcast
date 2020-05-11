@@ -1,7 +1,7 @@
 package com.p6e.broadcast.channel;
 
 import com.p6e.netty.websocket.client.P6eWebsocketClientApplication;
-import com.p6e.netty.websocket.client.mould.P6eNioMould;
+import com.p6e.netty.websocket.client.model.P6eNioModel;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,7 +25,7 @@ public abstract class P6eChannelAbstract {
      * 全局只有一个这样的对象
      */
     protected static P6eWebsocketClientApplication
-            clientApplication = P6eWebsocketClientApplication.run(P6eNioMould.class);
+            clientApplication = P6eWebsocketClientApplication.run(P6eNioModel.class);
 
     static {
         /* 初始化时间回调触发器 */

@@ -4,8 +4,9 @@ import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.P6eChannelCallback;
 import com.p6e.broadcast.channel.P6eChannelTimeCallback;
 import com.p6e.broadcast.common.P6eToolCommon;
-import com.p6e.netty.websocket.client.instructions.P6eInstructionsAbstractAsync;
-import com.p6e.netty.websocket.client.product.P6eProduct;
+import com.p6e.netty.websocket.client.P6eWebSocketClient;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
+import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +24,11 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
     /** 日志对象注入 */
     private final static Logger logger = LoggerFactory.getLogger(P6eDouYuChannel.class);
 
-    /** Web Socket 客户端对象 */
-    private P6eProduct product;
-
     /** 斗鱼房间 ID */
     private String rid;
+
+    /** Web Socket 会话客户端 ID */
+    private String clientId;
 
     /** 斗鱼回调函数 */
     private P6eChannelCallback.DouYu callback;
@@ -64,51 +65,53 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
     protected void connect() {
         // 修改状态为连接中
         this.setStatus(CONNECT_STATUS);
-        clientApplication.connect(
-                this.product = new P6eProduct(inventory.getWebSocketUrl(), new P6eInstructionsAbstractAsync() {
+        P6eConfig config = new P6eConfig(inventory.getWebSocketUrl(), new P6eActuatorDefault() {
 
             /** 时间回调触发器的配置信息 */
             private P6eChannelTimeCallback.Config config;
 
             @Override
-            public void onOpen(String id) {
-                logger.debug("DouYu onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+            public void onOpen(P6eWebSocketClient webSocket) {
+                logger.debug("DouYu onOpenAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
                 // 1. 发送登录信息
-                this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getLoginInfo()));
+                webSocket.sendBinaryMessage(messageEncoder(inventory.getLoginInfo()));
                 // 2. 发送加入组信息
-                this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getGroupInfo()));
+                webSocket.sendBinaryMessage(messageEncoder(inventory.getGroupInfo()));
                 // 3. 发送接受全部弹幕礼物和数据
-                this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getAllGiftInfo()));
+                webSocket.sendBinaryMessage(messageEncoder(inventory.getAllGiftInfo()));
                 // 4. 发送心跳消息
                 this.config = new P6eChannelTimeCallback.Config(45, true, true,
-                        config -> this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getPant())));
+                        config -> webSocket.sendBinaryMessage(messageEncoder(inventory.getPant())));
                 P6eChannelTimeCallback.addConfig(this.config);
             }
 
             @Override
-            public void onClose(String id) {
-                logger.debug("DouYu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
+            public void onClose(P6eWebSocketClient webSocket) {
+                clientId = webSocket.getId();
+                logger.debug("DouYu onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
                 if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
                 if (!isClose()) {
-                    logger.error("DouYu onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
+                    logger.error("DouYu onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]" +
                             " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
                     reconnect(); // 重新连接
                 }
             }
 
             @Override
-            public void onError(String id, Throwable throwable) {
-                logger.error("DouYu onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
+            public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
+                logger.error("DouYu onErrorAsync [ CLIENT: "
+                        + webSocket.getId() + ", RID: " + rid + " ] ==> " + throwable.getMessage());
             }
 
             @Override
-            public void onMessageText(String id, String content) {
-                logger.debug("DouYu onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
+            public void onMessageText(P6eWebSocketClient webSocket, String message) {
+                logger.debug("DouYu onMessageTextAsync [ CLIENT: "
+                        + webSocket.getId() + ", RID: " + rid + " ] ==> " + message);
             }
 
             @Override
-            public void onMessageBinary(String id, byte[] bytes) {
-                List<Source> sources = messageDecoder(bytes);
+            public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
+                List<Source> sources = messageDecoder(message);
                 List<P6eDouYuChannelMessage> messages = new ArrayList<>();
                 for (Source source : sources) {
                     // 包含 type@=loginres 标识连接成功到弹幕服务器
@@ -119,20 +122,26 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
             }
 
             @Override
-            public void onMessagePong(String id, byte[] bytes) {
-                logger.debug("DouYu onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+            public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
+                logger.debug("DouYu onMessagePongAsync [ CLIENT: "
+                        + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
             }
 
             @Override
-            public void onMessagePing(String id, byte[] bytes) {
-                logger.debug("DouYu onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+            public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
+                logger.debug("DouYu onMessagePingAsync [ CLIENT: "
+                        + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
             }
 
             @Override
-            public void onMessageContinuation(String id, byte[] bytes) {
-                logger.debug("DouYu onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
+            public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
+                logger.debug("DouYu onMessageContinuationAsync [ CLIENT: "
+                        + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
             }
-        }));
+        });
+//        config.setNettyLoggerBool(true);
+//        config.setNettyLogLevel(P6eConfig.LogLevel.DEBUG);
+        clientApplication.connect(config);
     }
 
     /**
@@ -143,7 +152,7 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
         if (clientApplication != null) {
             this.removeCache();
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         } else throw new RuntimeException("DouYu client application null");
     }
 
@@ -151,7 +160,7 @@ public class P6eDouYuChannel extends P6eChannelAbstract {
     protected void dump() {
         if (clientApplication != null) {
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         }
     }
 

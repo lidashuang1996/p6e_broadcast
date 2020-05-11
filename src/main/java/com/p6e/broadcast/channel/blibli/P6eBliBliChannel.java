@@ -4,8 +4,10 @@ import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.P6eChannelCallback;
 import com.p6e.broadcast.channel.P6eChannelTimeCallback;
 import com.p6e.broadcast.common.P6eToolCommon;
-import com.p6e.netty.websocket.client.instructions.P6eInstructionsAbstractAsync;
-import com.p6e.netty.websocket.client.product.P6eProduct;
+import com.p6e.netty.websocket.client.P6eWebSocketClient;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorAbstractAsync;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
+import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +25,11 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
     /** 日志对象注入 */
     private final static Logger logger = LoggerFactory.getLogger(P6eBliBliChannel.class);
 
-    /** Web Socket 客户端对象 */
-    private P6eProduct product;
-
     /** BliBli 房间 ID */
     private String rid;
+
+    /** Web Socket 会话客户端 ID */
+    private String clientId;
 
     /** BliBli 回调函数 */
     private P6eChannelCallback.BliBli callback;
@@ -55,6 +57,7 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
         this.rid = rid;
         this.callback = callback;
         this.inventory = new P6eBliBliChannelInventory(rid);
+        System.out.println(clientApplication);
         this.connect();
     }
 
@@ -62,88 +65,105 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
      * 连接斗鱼房间
      */
     protected void connect() {
-        // 修改状态为连接中
-        this.setStatus(CONNECT_STATUS);
-        // Web Socket 连接房间信息系统
-        clientApplication.connect(
-                this.product = new P6eProduct(inventory.getWebSocketWssUrl(), new P6eInstructionsAbstractAsync() {
-
-                    /** 时间回调触发器的配置信息 */
-                    private P6eChannelTimeCallback.Config config;
-
-                    @Override
-                    public void onOpen(String id) {
-                        logger.debug("BliBli onOpenAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
-
-                        // 发送登录的消息
-                        this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getLoginInfo(), inventory.getLoginType()));
-
-                        // 定时器
-                        config = new P6eChannelTimeCallback.Config(30, true, true, config ->
-                                this.sendMessage(BINARY_MESSAGE_TYPE, messageEncoder(inventory.getPantInfo(), inventory.getPantType())));
-
-                        P6eChannelTimeCallback.addConfig(config);
-
-                    }
-
-                    @Override
-                    public void onClose(String id) {
-                        logger.debug("BliBli onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]");
-                        if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
-                        if (!isClose()) {
-                            logger.error("BliBli onCloseAsync [ CLIENT: " + id + ", RID: " + rid + " ]" +
-                                    " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
-                            reconnect(); // 重新连接
-                        }
-                    }
-
-                    @Override
-                    public void onError(String id, Throwable throwable) {
-                        logger.error("BliBli onErrorAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + throwable.getMessage());
-                    }
-
-                    @Override
-                    public void onMessageText(String id, String content) {
-                        logger.debug("BliBli onMessageTextAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + content);
-                    }
-
-                    @Override
-                    public void onMessageBinary(String id, byte[] bytes) {
-                        List<Source> sources = messageDecoder(bytes);
-                        List<P6eBliBliChannelMessage> messages = new ArrayList<>();
-                        for (Source source : sources) {
-                            // 重置错误的连接次数
-                            if (source.type == inventory.getLoginResultType()) resetReconnect();
-                            messages.add(P6eBliBliChannelMessage.build(source.bytes, source.type, source.content));
-                        }
-                        if (callback != null) callback.execute(messages);
-                    }
-
-                    @Override
-                    public void onMessagePong(String id, byte[] bytes) {
-                        logger.debug("BliBli onMessagePongAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
-                    }
-
-                    @Override
-                    public void onMessagePing(String id, byte[] bytes) {
-                        logger.debug("BliBli onMessagePingAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
-                    }
-
-                    @Override
-                    public void onMessageContinuation(String id, byte[] bytes) {
-                        logger.debug("BliBli onMessageContinuationAsync [ CLIENT: " + id + ", RID: " + rid + " ] ==> " + new String(bytes));
-                    }
-                }));
+        try {
+            // 修改状态为连接中
+            this.setStatus(CONNECT_STATUS);
+            // Web Socket 连接房间信息系统
+            System.out.println("1" + clientApplication.getP6eModelCache().get());
+            clientApplication.connect(
+                    new P6eConfig(inventory.getWebSocketWssUrl(), new P6eActuatorDefault()));
+//            clientApplication.connect(
+//                    new P6eConfig(inventory.getWebSocketWssUrl(), new P6eActuatorDefault() {
+//
+//                        /** 时间回调触发器的配置信息 */
+//                        private P6eChannelTimeCallback.Config config;
+//
+//                        @Override
+//                        public void onOpen(P6eWebSocketClient webSocket) {
+//                            System.out.println(webSocket);
+//                            clientId = webSocket.getId();
+//
+//                            logger.debug("BliBli onOpenAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
+//
+//                            // 发送登录的消息
+//                            webSocket.sendBinaryMessage(messageEncoder(inventory.getLoginInfo(), inventory.getLoginType()));
+//
+//                            // 创建定时器
+//                            config = new P6eChannelTimeCallback.Config(30, true, true, config ->
+//                                    webSocket.sendBinaryMessage(messageEncoder(inventory.getPantInfo(), inventory.getPantType())));
+//
+//                            // 启动定时器
+//                            P6eChannelTimeCallback.addConfig(config);
+//                        }
+//
+//                        @Override
+//                        public void onClose(P6eWebSocketClient webSocket) {
+//                            logger.debug("BliBli onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]");
+//                            if (this.config != null) P6eChannelTimeCallback.removeConfig(this.config);
+//                            if (!isClose()) {
+//                                logger.error("BliBli onCloseAsync [ CLIENT: " + webSocket.getId() + ", RID: " + rid + " ]" +
+//                                        " ==> retry " + incrementRetry() + ", retryCount" + getRetryCount());
+//                                reconnect(); // 重新连接
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
+//                            logger.error("BliBli onErrorAsync [ CLIENT: "
+//                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + throwable.getMessage());
+//                        }
+//
+//                        @Override
+//                        public void onMessageText(P6eWebSocketClient webSocket, String message) {
+//                            logger.debug("BliBli onMessageTextAsync [ CLIENT: "
+//                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + message);
+//                        }
+//
+//                        @Override
+//                        public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
+//                            List<Source> sources = messageDecoder(message);
+//                            List<P6eBliBliChannelMessage> messages = new ArrayList<>();
+//                            for (Source source : sources) {
+//                                // 重置错误的连接次数
+//                                if (source.type == inventory.getLoginResultType()) resetReconnect();
+//                                messages.add(P6eBliBliChannelMessage.build(source.bytes, source.type, source.content));
+//                            }
+//                            if (callback != null) callback.execute(messages);
+//                        }
+//
+//                        @Override
+//                        public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
+//                            logger.debug("BliBli onMessagePongAsync [ CLIENT: "
+//                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
+//                        }
+//
+//                        @Override
+//                        public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
+//                            logger.debug("BliBli onMessagePingAsync [ CLIENT: "
+//                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
+//                        }
+//
+//                        @Override
+//                        public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
+//                            logger.debug("BliBli onMessageContinuationAsync [ CLIENT: "
+//                                    + webSocket.getId() + ", RID: " + rid + " ] ==> " + new String(message));
+//                        }
+//                    }));
+            System.out.println("2" + clientApplication.getP6eModelCache().get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * 关闭 BliBli 的房间信息服务器
      */
+    @Override
     public void close() {
         if (clientApplication != null) {
             this.removeCache();
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         } else throw new RuntimeException("BliBli client application null");
     }
 
@@ -151,10 +171,9 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
     protected void dump() {
         if (clientApplication != null) {
             this.setStatus(CLOSE_STATUS);
-            clientApplication.close(product.getId());
+            clientApplication.close(clientId);
         }
     }
-
 
     /**
      * BliBli 发送消息
@@ -279,10 +298,13 @@ public class P6eBliBliChannel extends P6eChannelAbstract {
      * 消息源的模型类，内部使用
      */
     private static class Source {
+
         /** 构造方法注入数据 */
         private byte[] bytes;
+
         /** 构造方法注入数据 */
         private int type;
+
         /** 构造方法注入数据 */
         private String content;
 

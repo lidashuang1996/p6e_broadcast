@@ -39,10 +39,13 @@
         </dependency>
 
         <!-- netty 编写的 Web Socket 客户端 -->
+        <!-- 这个是我本地的 Mevan 环境下载的依赖包 -->
+        <!-- https://github.com/lidashuang1996/p6e_netty_websocket_client -->
+        <!-- 暂时其他用户只能通过 JAR 导入 -->
         <dependency>
             <groupId>com.p6e.netty</groupId>
-            <artifactId>websocket-client</artifactId>
-            <version>0.0.1</version>
+            <artifactId>p6e-netty-websocket-client</artifactId>
+            <version>1.0.2</version>
         </dependency>
 
         <!-- 测试工具 JAR -->
