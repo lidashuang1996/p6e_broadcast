@@ -4,7 +4,7 @@ import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.P6eChannelCallback;
 import com.p6e.broadcast.channel.P6eChannelTimeCallback;
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
-import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefaultAsync;
 import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +90,7 @@ public class P6eLongZhuChannel extends P6eChannelAbstract {
         if (clientApplication == null) throw new RuntimeException("client application null");
         else {
             clientApplication.connect(
-                    new P6eConfig(inventory.getWebSocketWsUrl(), new P6eActuatorDefault() {
+                    new P6eConfig(inventory.getWebSocketWsUrl(), new P6eActuatorDefaultAsync() {
 
                         /** 是否初始化 */
                         private boolean bool = false;

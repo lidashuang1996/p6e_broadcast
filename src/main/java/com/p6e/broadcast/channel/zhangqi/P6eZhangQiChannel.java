@@ -6,7 +6,7 @@ import com.p6e.broadcast.channel.P6eChannelCallback;
 import com.p6e.broadcast.channel.P6eChannelTimeCallback;
 import com.p6e.broadcast.common.P6eToolCommon;
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
-import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefaultAsync;
 import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class P6eZhangQiChannel extends P6eChannelAbstract {
         // Web Socket 连接房间信息系统
         System.out.println(inventory.getWebSocketUrl());
         clientApplication.connect(
-                new P6eConfig(inventory.getWebSocketUrl(), top, new P6eActuatorDefault() {
+                new P6eConfig(inventory.getWebSocketUrl(), top, new P6eActuatorDefaultAsync() {
 
                     /** 时间回调触发器的配置信息 */
                     private P6eChannelTimeCallback.Config config;

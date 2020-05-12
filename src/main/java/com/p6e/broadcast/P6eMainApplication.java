@@ -1,5 +1,7 @@
 package com.p6e.broadcast;
 
+import com.p6e.broadcast.channel.blibli.P6eBliBliChannel;
+import com.p6e.broadcast.channel.blibli.P6eBliBliChannelMessage;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannel;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannelMessage;
 import com.p6e.broadcast.common.P6eLoggerCommon;
@@ -111,18 +113,34 @@ public class P6eMainApplication {
 
 
         /* 斗鱼连接弹幕房间 */
-        P6eDouYuChannel p6eDouYuChannel = P6eDouYuChannel.create("288016", messages -> {
-            for (P6eDouYuChannelMessage message : messages) {
-                logger.info("[ DOU YU ] ==> " + message.data().toString());
-            }
-        });
-
-        /* BliBli 连接弹幕房间 */
-//        P6eBliBliChannel p6eBliBliChannel = P6eBliBliChannel.create("531557", messages -> {
-//            for (P6eBliBliChannelMessage message : messages) {
-//                logger.info("[ BLI BLI ] ==> " + message.data().toString());
+//        P6eDouYuChannel p6eDouYuChannel1 = P6eDouYuChannel.create("96291", messages -> {
+//            for (P6eDouYuChannelMessage message : messages) {
+//                logger.info("[ DOU YU 96291 ] ==> " + message.data().toString());
 //            }
 //        });
+//
+//        P6eDouYuChannel p6eDouYuChannel2 = P6eDouYuChannel.create("290935", messages -> {
+//            for (P6eDouYuChannelMessage message : messages) {
+//                logger.info("[ DOU YU 290935 ] ==> " + message.data().toString());
+//            }
+//        });
+//
+//        P6eDouYuChannel p6eDouYuChannel3 = P6eDouYuChannel.create("99999", messages -> {
+//            for (P6eDouYuChannelMessage message : messages) {
+//                logger.info("[ DOU YU 99999 ] ==> " + message.data().toString());
+//            }
+//        });
+
+
+
+
+
+        /* BliBli 连接弹幕房间 */
+        P6eBliBliChannel p6eBliBliChannel = P6eBliBliChannel.create("10810434", messages -> {
+            for (P6eBliBliChannelMessage message : messages) {
+                logger.info("[ BLI BLI ] ==> " + message.data().toString());
+            }
+        });
 
         /* 火猫连接弹幕房间 */
 //        P6eHuoMaoChannel p6eHuoMaoChannel = P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
