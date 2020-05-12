@@ -51,7 +51,9 @@ public interface P6eChannelCallback {
         public void execute(List<P6eKuaiShouChannelMessage> messages);
     }
 
-
+    /**
+     * 战旗消息的回调
+     */
     public interface ZhangQi {
         public void execute(List<P6eZhangQiChannelMessage> messages);
     }
