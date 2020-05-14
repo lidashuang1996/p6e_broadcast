@@ -31,7 +31,8 @@ P6eBliBliChannel p6eBliBliChannel = P6eBliBliChannel.create("7734200", messages 
 });
 
 /* 火猫连接弹幕房间 */
-P6eHuoMaoChannel p6eHuoMaoChannel = P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
+P6eHuoMaoChannel p6eHuoMaoChannel 
+    = P6eHuoMaoChannel.create("http://www.huomao.com/138569", messages -> {
     for (P6eHuoMaoChannelMessage message : messages) {
         logger.info("[ HUO MAO ] ==> " + message.data().toString());
     }
@@ -41,7 +42,7 @@ P6eHuoMaoChannel p6eHuoMaoChannel = P6eHuoMaoChannel.create("http://www.huomao.c
 ### 关闭的方法
 
 ``` java
-/* 关闭的方法 */
+/* 关闭是当前连接器的方法 */
 p6eDouYuChannel.close();
 p6eBliBliChannel.close();
 p6eHuoMaoChannel.close();
@@ -49,8 +50,27 @@ p6eHuoMaoChannel.close();
 
 ### 摧毁的方法
 
-```
+```java
+/* 摧毁的方法 */
+/* 关闭当前的所有连接器 */
+/* 摧毁创建连接器的对象，以及里面的异步线程池 */
 P6eChannelAbstract.destroy();
+```
+
+### 自定义创建连接器对象
+
+``` java
+/* 需要在创建连接之前调用 */
+/* 传入的连接器对象会替换默认的连接器对象 */
+P6eChannelAbstract.init(P6eWebsocketClientApplication.run(
+    P6eNioModel.class, // 可以自定义的实现，这里是默认的实现
+    // 替换异步处理消息的线程池 （用自定义的线程池管理异步回调消息）
+    new ThreadPoolExecutor(0, 30, 60L, TimeUnit.SECONDS, new SynchronousQueue<>())
+));
+
+
+// 连接弹幕服的代码
+// ...... 
 ```
 
 
@@ -79,7 +99,7 @@ P6eChannelAbstract.destroy();
 <dependency>
     <groupId>com.p6e.netty</groupId>
     <artifactId>p6e-netty-websocket-client</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 
 <!-- 测试工具 JAR -->
