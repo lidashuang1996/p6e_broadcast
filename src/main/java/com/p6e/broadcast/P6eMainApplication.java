@@ -1,12 +1,19 @@
 package com.p6e.broadcast;
 
+import com.p6e.broadcast.channel.P6eChannelAbstract;
 import com.p6e.broadcast.channel.blibli.P6eBliBliChannel;
 import com.p6e.broadcast.channel.blibli.P6eBliBliChannelMessage;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannel;
 import com.p6e.broadcast.channel.douyu.P6eDouYuChannelMessage;
 import com.p6e.broadcast.common.P6eLoggerCommon;
+import com.p6e.netty.websocket.client.P6eWebsocketClientApplication;
+import com.p6e.netty.websocket.client.model.P6eNioModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 1. blibli    ok!
@@ -161,8 +168,18 @@ public class P6eMainApplication {
         // p6eBliBliChannel.close();
         // p6eHuoMaoChannel.close();
 
+
+
         /* 摧毁的方法 */
-        // P6eChannelAbstract.destroy();
+//         P6eChannelAbstract.destroy();
+
+        /* 需要在创建连接之前调用 */
+        /* 传入的连接器对象会替换默认的连接器对象 */
+        P6eChannelAbstract.init(P6eWebsocketClientApplication.run(
+                P6eNioModel.class, // 可以自定义的实现，这里是默认的实现
+                // 替换异步处理消息的线程池 （用自定义的线程池管理异步回调消息）
+                new ThreadPoolExecutor(0, 30, 60L, TimeUnit.SECONDS, new SynchronousQueue<>())
+        ));
     }
 
 }

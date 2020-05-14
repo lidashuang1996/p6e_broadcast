@@ -123,6 +123,9 @@ public class P6eChannelTimeCallback {
     // 是否为摧毁的状态
     private static volatile boolean isDestroy = false;
 
+    // 是否为清空状态
+    private static volatile boolean isClear = false;
+
     // 轮训间隔时间
     private static long trainingInterval = 1000;
 
@@ -156,11 +159,8 @@ public class P6eChannelTimeCallback {
                             // 每个一段时间遍历一次计数器
                             Iterator<Config> iterator = configs.iterator();
                             while (iterator.hasNext()) {
+                                if (isDestroy || isClear) break;
                                 Config config = iterator.next();
-                                if (isDestroy) {
-                                    iterator.remove();
-                                    break;
-                                }
                                 try {
                                     if (config == null || config.getActuator() == null) iterator.remove();
                                     else {
@@ -188,7 +188,11 @@ public class P6eChannelTimeCallback {
                                 }
                             }
                             // 如果为摧毁就关闭线程
-                            if (isDestroy) break;
+                            if (isDestroy) {
+                                queue.clear();
+                                configs.clear();
+                                break;
+                            }
                             // 休眠时间为间隔时间
                             Thread.sleep(trainingInterval);
                         } catch (Exception e) {
@@ -214,13 +218,21 @@ public class P6eChannelTimeCallback {
      * 删除一个事件触发器
      * @param config 配置文件
      */
-    public static void removeConfig(Config config) {
+    public synchronized static void removeConfig(Config config) {
         queue.offer(config);
         Config c = queue.poll();
         while (c != null) {
             configs.remove(c);
             c = queue.poll();
         }
+    }
+
+    /**
+     * 清空所有的定时连接回调方法
+     */
+    public static void clear() {
+        isClear = true;
+        configs.clear();
     }
 
     /**

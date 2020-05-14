@@ -23,13 +23,24 @@ public abstract class P6eChannelAbstract {
     /**
      * 获取 WebSocket 客户端连接对象应用
      * 全局只有一个这样的对象
+     *
+     * 默认的实现
      */
-    protected static P6eWebsocketClientApplication
-            clientApplication = P6eWebsocketClientApplication.run(P6eNioModel.class);
+    protected static P6eWebsocketClientApplication clientApplication = P6eWebsocketClientApplication.run();
 
     static {
         /* 初始化时间回调触发器 */
         P6eChannelTimeCallback.create();
+    }
+
+    /**
+     * 自定义 WebSocket 客户端连接对象，需要在连接 websocket 服务之前调用
+     * @param p6eWebsocketClientApplication 用户自定义的 P6eWebsocketClientApplication
+     */
+    public synchronized static void init(P6eWebsocketClientApplication p6eWebsocketClientApplication) {
+        clientApplication.destroy(); // 关闭之前的所有客户端数据，以及摧毁默认的异常线程池
+        P6eChannelTimeCallback.clear(); // 清空时间回调线程执行器
+        clientApplication = p6eWebsocketClientApplication;
     }
 
     /** 当前连接器的状态 */
@@ -138,7 +149,7 @@ public abstract class P6eChannelAbstract {
     /**
      * 删除缓存
      */
-    protected void removeCache() {
+    protected synchronized void removeCache() {
         queue.offer(this);
         P6eChannelAbstract channel = queue.poll();
         if (channel != null) {
